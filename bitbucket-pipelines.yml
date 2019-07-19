@@ -1,0 +1,35 @@
+# This is a sample build configuration for JavaScript.
+# Check our guides at https://confluence.atlassian.com/x/14UWN for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: atlassian/default-image:2
+
+pipelines:
+  default:
+  - step:
+      name: Build & Install with NPM
+      caches:
+      - node
+      script:
+      - npm install
+      - npm install -g grunt-cli
+      - npm install grunt --save-dev
+      - grunt env-test
+      - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+      - export APPLICATION_NAME=$APPLICATION_NAME
+      - export S3_BUCKET=$S3_BUCKET
+      - export DEPLOYMENT_GROUP_NAME=$DEPLOYMENT_GROUP_NAME
+      - zip -r /tmp/mome-front-end.zip *
+
+
+  - step:
+        trigger: manual
+        name: Deploy to AWS
+        image: atlassian/pipelines-awscli
+        script:
+        - aws --region $AWS_DEFAULT_REGION deploy push --application-name $APPLICATION_NAME --s3-location s3://$S3_BUCKET/mome-front-end.zip --ignore-hidden-files
+        - aws deploy create-deployment --application-name $APPLICATION_NAME --s3-location bucket=$S3_BUCKET,key=mome-front-end.zip,bundleType=zip --deployment-group-name $DEPLOYMENT_GROUP_NAME --ignore-application-stop-failures --description "Ignore ApplicationStop failures due to broken script"
+
