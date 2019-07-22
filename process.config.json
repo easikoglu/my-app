@@ -1,0 +1,30 @@
+{
+  "apps": [
+    {
+      "exec_interpreter": "node",
+      "exec_mode": "cluster_mode",
+      "instances": "1",
+      "instance_var": "my-app",
+      "name": "my-app",
+      "script":"npm",
+      "args":"run start",
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": 3000
+      },
+      "env_production": {
+        "PORT": 3002,
+        "NODE_ENV": "production",
+         "node_args": [
+          "run start --max_old_space_size=500"
+        ]
+      },
+      "env_test": {
+        "NODE_ENV": "test",
+        "PORT": 3004
+      }
+    }
+  ]
+}
+
+
